@@ -1,0 +1,158 @@
+
+mariadb:
+  enabled: true
+  architecture: "standalone"
+  auth:
+    username: "misp"
+    rootPassword: "misp"
+    database: "misp"
+    password: "password"
+    replicationPassword: "password"
+
+  passwordUpdateJob:
+    enabled: true
+
+redis:
+  architecture: "standalone"
+  enabled: true
+  auth:
+    enabled: false
+
+mysql:
+  enabled: false
+  architecture: "standalone"
+  port: 3306
+  auth:
+    username: "misp"
+    database: "misp"
+    rootPassword: "password"
+    password: "password"
+    replicationPassword: "password"
+
+  passwordUpdateJob:
+    enabled: true
+
+services:
+  misp:
+    port: 8080
+    target_port: 80
+    type: ClusterIP
+  misp_modules:
+    port: 80
+    target_port: 6666
+    type: ClusterIP
+    # - type: ClusterIP
+    #   port: 8080
+    # - type: ClusterIP
+    #   port: 50000
+
+base_url: http://misp.192.168.39.47.nip.io
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+    - host: misp
+      domain: 192.168.39.47.nip.io
+      paths:
+        - path: /
+          pathType: Prefix
+            #  tls: 
+            #- secretName: chart-example-tls
+            #hosts:
+            #- chart-example.local
+
+volumeMounts:
+  - mountPath: /var/www/MISP/app/tmp/logs
+    name: misp-logs
+  - mountPath: /var/www/MISP/app/files/certs
+    name: misp-certs
+  - mountPath: /var/www/MISP/app/attachments
+    name: misp-attachments
+  - mountPath: /var/www/MISP/app/files/img/orgs
+    name: misp-img-orgs
+  - mountPath: /var/www/MISP/app/files/img/custom
+    name: misp-img-custom
+  - mountPath: /var/www/MISP/.gnupg
+    name: misp-gnupg
+
+volumes:
+  - name: misp-logs
+    persistentVolumeClaim:
+      claimName: misp-logs
+  - name: misp-certs
+    persistentVolumeClaim:
+      claimName: misp-certs
+  - name: misp-attachments
+    persistentVolumeClaim:
+      claimName: misp-attachments
+  - name: misp-img-orgs
+    persistentVolumeClaim:
+      claimName: misp-img-orgs
+  - name: misp-img-custom
+    persistentVolumeClaim:
+      claimName: misp-img-custom
+  - name: misp-gnupg
+    persistentVolumeClaim:
+      claimName: misp-gnupg
+
+replicaCount: 1
+misp:
+  image:
+    repository: ghcr.io/nukib/misp
+    pullPolicy: IfNotPresent
+    tag: "latest"
+misp_modules:
+  image:
+    repository: ghcr.io/nukib/misp-modules
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+resources: {}
+livenessProbe:
+  misp:
+    httpGet:
+      path: /
+      port: 80
+  misp_modules:
+    httpGet:
+      path: /modules
+      port: 6666
+readinessProbe:
+  misp:
+    httpGet:
+      path: /
+      port: 80
+  misp_modules:
+    httpGet:
+      path: /modules
+      port: 6666

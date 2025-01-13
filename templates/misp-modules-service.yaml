@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "misp-helm.fullname" . }}-modules
+  labels:
+    {{- include "misp-helm.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.services.misp_modules.type }}
+  ports:
+    - port: {{ .Values.services.misp_modules.port }}
+      targetPort: {{ .Values.services.misp_modules.target_port }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "misp-helm.selectorLabels" . | nindent 4 }}

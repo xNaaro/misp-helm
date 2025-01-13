@@ -1,0 +1,15 @@
+{{- range $k, $v := $.Values.volumes }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $v.name }}
+  labels:
+    {{- include "misp-helm.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+{{ end }}
